@@ -1,0 +1,116 @@
+{
+  "edges": {
+    "project-program": {
+      "edgeTable": {
+        "collection": "project:program",
+        "fromField": "$.project",
+        "source": "pfb",
+        "toField": "$.program"
+      },
+      "fromVertex": "project/",
+      "label": "program",
+      "toVertex": "program/"
+    },
+    "reference_file-project": {
+      "edgeTable": {
+        "collection": "reference_file:project",
+        "fromField": "$.reference_file",
+        "source": "pfb",
+        "toField": "$.project"
+      },
+      "fromVertex": "reference_file/",
+      "label": "project",
+      "toVertex": "project/"
+    },
+    "sample-subject": {
+      "edgeTable": {
+        "collection": "sample:subject",
+        "fromField": "$.sample",
+        "source": "pfb",
+        "toField": "$.subject"
+      },
+      "fromVertex": "sample/",
+      "label": "subject",
+      "toVertex": "subject/"
+    },
+    "sequencing-sample": {
+      "edgeTable": {
+        "collection": "sequencing:sample",
+        "fromField": "$.sequencing",
+        "source": "pfb",
+        "toField": "$.sample"
+      },
+      "fromVertex": "sequencing/",
+      "label": "sample",
+      "toVertex": "sample/"
+    },
+    "subject-project": {
+      "edgeTable": {
+        "collection": "subject:project",
+        "fromField": "$.subject",
+        "source": "pfb",
+        "toField": "$.project"
+      },
+      "fromVertex": "subject/",
+      "label": "project",
+      "toVertex": "project/"
+    }
+  },
+  "vertices": {
+    "core_metadata_collection/": {
+      "collection": "core_metadata_collection",
+      "label": "core_metadata_collection",
+      "source": "pfb"
+    },
+    "data_release/": {
+      "collection": "data_release",
+      "label": "data_release",
+      "source": "pfb"
+    },
+    "discovery/": {
+      "collection": "discovery",
+      "label": "discovery",
+      "source": "pfb"
+    },
+    "family/": {
+      "collection": "family",
+      "label": "family",
+      "source": "pfb"
+    },
+    "program/": {
+      "collection": "program",
+      "label": "program",
+      "source": "pfb"
+    },
+    "project/": {
+      "collection": "project",
+      "label": "project",
+      "source": "pfb"
+    },
+    "reference_file/": {
+      "collection": "reference_file",
+      "label": "reference_file",
+      "source": "pfb"
+    },
+    "root/": {
+      "collection": "root",
+      "label": "root",
+      "source": "pfb"
+    },
+    "sample/": {
+      "collection": "sample",
+      "label": "sample",
+      "source": "pfb"
+    },
+    "sequencing/": {
+      "collection": "sequencing",
+      "label": "sequencing",
+      "source": "pfb"
+    },
+    "subject/": {
+      "collection": "subject",
+      "label": "subject",
+      "source": "pfb"
+    }
+  }
+}
