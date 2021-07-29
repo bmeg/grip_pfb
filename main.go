@@ -3,6 +3,7 @@ package main
 import (
   "os"
   "fmt"
+  "log"
 	"flag"
   "strings"
   "encoding/json"
@@ -80,13 +81,13 @@ func main() {
 
 	fh, err := os.Open(arg)
 	if err != nil {
-		fmt.Printf("Issues\n")
+		log.Printf("Issues\n")
 		return
 	}
 
 	ocf, err := goavro.NewOCFReader(fh)
 	if err != nil {
-		fmt.Printf("Issues Reading File: %s\n", err)
+		log.Printf("Issues Reading File: %s\n", err)
 		return
 	}
 
@@ -94,7 +95,7 @@ func main() {
 	for ocf.Scan() {
 		datum, err := ocf.Read()
     if err != nil {
-      fmt.Printf("Issues Reading File: %s\n", err)
+      log.Printf("Issues Reading File: %s\n", err)
   		return
     }
     t := avroTransform(datum)
@@ -119,7 +120,7 @@ func main() {
                           //fmt.Printf("link: %s - %s > %s\n", nodeName, linkName, dst)
                           edgeTableName := fmt.Sprintf("%s:%s", nodeName, dst)
                           nodeDriver := ElementDriver{data:map[string]map[string]interface{}{}}
-                          fmt.Printf("EdgeTable: %s\n", edgeTableName)
+                          log.Printf("EdgeTable: %s\n", edgeTableName)
                           tables[edgeTableName] = &nodeDriver
                         }
                       }
@@ -179,7 +180,7 @@ func main() {
 
   sc, _ := json.Marshal(map[string]interface{}{"vertices":mapVertices, "edges":mapEdges})
 
-  fmt.Printf("%s\n", sc)
+  log.Printf("%s\n", sc)
 
   drivers := map[string]gripper.Driver{}
   for t, v := range tables {
