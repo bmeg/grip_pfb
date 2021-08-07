@@ -1,12 +1,12 @@
 package main
 
 import (
-  "io/ioutil"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/bmeg/grip/gripper"
 	"github.com/linkedin/goavro/v2"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -77,25 +77,26 @@ func (ed *ElementDriver) GetRows() map[string]*gripper.BaseRow {
 	return out
 }
 
-func loadTables(avroPath string) (map[string]*ElementDriver, error) {
+func loadTables(avroPath string) (map[string]*ElementDriver, map[string]map[string]string, error) {
 	fh, err := os.Open(avroPath)
 	if err != nil {
 		log.Printf("Issues\n")
-		return nil, err
+		return nil, nil, err
 	}
 
 	ocf, err := goavro.NewOCFReader(fh)
 	if err != nil {
 		log.Printf("Issues Reading File: %s\n", err)
-		return nil, err
+		return nil, nil, err
 	}
 
+	fieldLinkMap := map[string]map[string]string{}
 	tables := map[string]*ElementDriver{}
 	for ocf.Scan() {
 		datum, err := ocf.Read()
 		if err != nil {
 			log.Printf("Issues Reading File: %s\n", err)
-			return nil, err
+			return nil, nil, err
 		}
 		t := avroTransform(datum)
 		if record, ok := t.(map[string]interface{}); ok {
@@ -121,6 +122,7 @@ func loadTables(avroPath string) (map[string]*ElementDriver, error) {
 													nodeDriver := ElementDriver{data: map[string]map[string]interface{}{}}
 													log.Printf("EdgeTable: %s\n", edgeTableName)
 													tables[edgeTableName] = &nodeDriver
+													fieldLinkMap[edgeTableName] = map[string]string{}
 												}
 											}
 										}
@@ -146,6 +148,8 @@ func loadTables(avroPath string) (map[string]*ElementDriver, error) {
 											edgeID := fmt.Sprintf("%s:%s", recordID, dstID)
 											edgeTableName := fmt.Sprintf("%s:%s", recName, dstName)
 											tables[edgeTableName].AddEntity(edgeID, map[string]interface{}{recName: recordID, dstName: dstID})
+											fieldLinkMap[edgeTableName][recName] = recName
+											fieldLinkMap[edgeTableName][dstName] = dstName
 										}
 									}
 								}
@@ -156,7 +160,7 @@ func loadTables(avroPath string) (map[string]*ElementDriver, error) {
 			}
 		}
 	}
-	return tables, nil
+	return tables, fieldLinkMap, nil
 }
 
 func printGraph(tables map[string]*ElementDriver) {
@@ -188,32 +192,37 @@ func main() {
 	flag.Parse()
 	configPath := flag.Args()[0]
 
-  data, err := ioutil.ReadFile(configPath)
-  if err != nil {
+	data, err := ioutil.ReadFile(configPath)
+	if err != nil {
 		return
 	}
 
-  config := map[string]string{}
-  err = json.Unmarshal(data, &config)
-  if err != nil {
-    return
-  }
+	config := map[string]string{}
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return
+	}
 
-  var avroPath string
-  if t, ok := config["path"]; !ok {
-    log.Printf("No path found")
-    return
-  } else {
-    avroPath = t
-  }
-	tables, err := loadTables(avroPath)
+	var avroPath string
+	if t, ok := config["path"]; !ok {
+		log.Printf("No path found")
+		return
+	} else {
+		avroPath = t
+	}
+	tables, fieldLinkMap, err := loadTables(avroPath)
 	if err != nil {
 		return
 	}
 
 	drivers := map[string]gripper.Driver{}
 	for t, v := range tables {
-		drivers[t] = gripper.NewDriverPreload(v.GetRows())
+		if fm, ok := fieldLinkMap[t]; ok {
+			log.Printf("LinkMap: %s", fm)
+			drivers[t] = gripper.NewDriverPreload(v.GetRows(), fm)
+		} else {
+			drivers[t] = gripper.NewDriverPreload(v.GetRows(), nil)
+		}
 	}
 
 	srv := gripper.NewSimpleTableServer(drivers)
